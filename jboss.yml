@@ -1,0 +1,57 @@
+--- 
+- name: install jboss on ubuntu 18:04
+  hosts: all
+  become: yes
+  tasks:
+    - name: jboss install
+      ansible.builtin.apt:
+        name: default-jdk
+        update_cache: true 
+        state: present
+    - name: create a jboss group 
+      ansible.builtin.group:
+        name: jboss 
+        state: present 
+    - name: create a jboss user 
+      ansible.builtin.user:
+        group: jboss
+        home: /opt/wildfly
+        shell: /sbin/nologin
+        system: true
+        state: present
+    - name: Download wild-fly version 16.0.0
+      ansible.builtin.get_url:
+        url: https://download.jboss.org/wildfly/$WILDFLY_VERSION/wildfly-$WILDFLY_VERSION.tar.gz
+        dest: /tmp/WILDFLY_VERSION.tar.gz    
+    - name: extract wild-fly 16.0.0
+      ansible.builtin.unarchive:
+        src: https://download.jboss.org/wildfly/$WILDFLY_VERSION/wildfly-$WILDFLY_VERSION.tar.gz      
+        dest: /opt/
+        remote_src: yes 
+    - name: create a symbolic link
+      ansible.builtin.file:
+        src: /opt/wildfly:16.0.0
+        dest: WILDFLY_VERSION /opt/wildfly
+        state: link
+    - name: change perssion
+      ansible.builtin.file:
+        dest: WILDFLY_VERSION /opt/
+        owner: wildfly
+        recurse: true 
+        state: directory
+    - name: addexecute permission to shell files
+      ansible.builtin.command: sudo mkdir -p /etc/wildfly
+    - name: create a systemd unit files
+      ansible.builtin.copy:
+        src: /opt/wildfly/docs/contrib/scripts/systemd/wildfly.conf
+        dest: /etc/wildfly/
+        owner: wildfly
+        group: wildfly
+        
+        
+
+   
+
+
+
+  
